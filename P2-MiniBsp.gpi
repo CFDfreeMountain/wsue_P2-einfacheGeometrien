@@ -1,0 +1,63 @@
+# Authorin: Aline Juenger
+# erstellt am: unbekannt
+# zuletzt bearbeitet von: Christian Ernst
+# zuletzt bearbeitet am: 03.02.2025
+#
+# Beschreibung:
+# Skript stellt 1.) Messdaten grafisch dar
+# und 2.) fittet den Wärmeübergangskoeffizient entsprechend der
+# exp. Messwerte und stellt den Modellverlauf des therm. kompakten Körpers
+# sowie der Messwerte grafisch dar.
+
+
+# Messdatei benennen
+messdatei="messung-20250108_original.dat"
+
+
+# Terminaleinstellungen
+reset
+set term postscript eps enhanced color
+
+# Diagrammeinstellungen
+set grid
+set xlabel "t in s"
+set ylabel "T in C"
+
+## 1. Darstellung Messwerte
+# --> Anpassung Startzeit:
+# --> Anpassung Achsenintervalle: set xrange [x_start:x_end]
+# --> Titel des Diagrammes: set title "Messung" anpassen
+#--> Darstellung Alu und Kunststoffmesswerte in weiterem Diagramm
+#--> Intervallanpassung
+
+set output "P2-Messwerte.eps"		# Ausgabedatei
+plot messdatei using 1:2 every 10 with points title "Messung: Cu"	# Plot erstellen
+
+
+# 2. Bestimmen des unbekannten Parameters
+# --> Modell anpassen und benennen
+#--> Modellparamter vorgeben
+# --> alpha fuer Referenzkoerper bestimmen: aus Messwerten mittels Fitting
+#--> Titel des Diagrammes anpassen
+#--> Anpassen des Darstellungsbereiches (Achsenintervalle)
+
+
+set output "P2-Fit.eps"		# Ausgabedatei
+set xrange [0:1600]		# X-Intervall
+set yrange [0:80]		# Y-Intervall
+set dummy t			# t als laufvariable einführen
+
+# Funktionen & Variablen
+T(t)=Tu+(T0-Tu)*exp(-1*B*C1*t)		# Modellgleichung therm. kompakter Körper
+C1= <startwert> 			# Startwert
+B = <parameterwert>			# Parameter
+T0= <starttemperatur>			# Initialtemperatur[°C]
+Tu= <umgebungstemperatur>		# Umgebungstemperatur[°C]
+x_start= <startzeit>			# Zeit[s] ab der Fitting beginnen soll
+
+# Fitting von C1 anhand der Messdaten
+fit T(t) "messung-20250108_original.dat" using ($1-x_start):2 via C1
+
+# Darstellung der Messwerte & gefitteten Modellgleichung
+plot "messung-20250108_original.dat" using ($1-x_start):2 every 1 with points title "Messung: Cu",\
+T(t) w l lc "red" ti "Modell TKK"
